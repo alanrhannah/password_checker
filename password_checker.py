@@ -1,3 +1,9 @@
+import argparse
+import getpass
+import operator
+import re
+
+
 class PasswordChecker(object):
     """Check password strings for conditions and return boolean value"""
     def __init__(self, password, confirm_password):
@@ -20,54 +26,55 @@ class PasswordChecker(object):
         Returns:
             boolean -- a boolean
         """
-        return self.password = self.confirm_password
+        return self.password == self.confirm_password
 
-    def check_string_length(self, length=None):
+    def str_number_instances_bool(self, regex, operator_rule, num_instances):
         """
-        Check the length of the string against the rule set.
+        Check occurances of instances of a regex rule matches and return boolen.
 
-        Keyword Arguments:
-           length {number} -- [The required length of the password]
-           (default: {None})
+        Arguments:
+            regex -- [a regex string]
+            operator_rule -- [an operator function, i.e. operator.lt]
+            num_instances -- [a number of instances required.
+
+        Returns:
+            boolean -- a boolean value
         """
-        pass
+        instances_list = re.findall(regex, self.password)
 
-    def check_lowercase(self, instances_lowercase=None):
+        return operator_rule(len(instances_list), num_instances)
+
+
+    def validate(self):
         """
-        Check if the password strings contains the minimum required
-        instance of lowercase charachters.
+        Validate the user input matches the rules as expected.
 
-        Keyword Arguments:
-            instances_lowercase {number} -- [The required number of
-            lowercase instances] (default: {None})
+        Returns:
+            boolean -- a boolean value
         """
-        pass
+        match = self.check_strings_match()
+        length_boolean = self.str_number_instances_bool(r'.', operator.ge, 8)
+        lowercase_boolean = self.str_number_instances_bool(
+            r'[a-z]', operator.ge, 1)
 
-    def check_uppercase(self, instances_uppercase=None):
-        """
-        Check if the password strings contains the minimum required
-        instance of lowercase charachters.
+        uppercase_boolean = self.str_number_instances_bool(
+            r'[A-Z]', operator.ge, 1)
 
-        Keyword arguments:
-            instances_uppercase {number} -- [The required number of
-            lowercase instances] (default: {None})
-        """
-        pass
+        digit_boolean = self.str_number_instances_bool(
+            r'\d', operator.ge, 1)
 
-    def check_digits(self, instances_digits=None):
-        """
-        Check if the password strings contains the minimum required
-        instance of digits.
+        return all([match,
+                   length_boolean,
+                   lowercase_boolean,
+                   uppercase_boolean,
+                   digit_boolean])
 
-        Keyword arguments:
-            instances_digits {number} -- [The required number of
-            digit instances] (default: {None})
-        """
-        pass
 
-    def main(self):
-        return all(self.check_strings_match(),
-                   self.check_string_length(length=8),
-                   self.check_lowercase(instances_lowercase=1),
-                   self.check_uppercase(instances_uppercase=1),
-                   self.check_digits(instances_digits=1))
+if __name__ == "__main__":
+    user_input_password = getpass.getpass('Please Enter Password: ')
+    user_input_confirm_password = getpass.getpass('Please Confirm Password: ')
+
+    password_checker = PasswordChecker(user_input_password,
+                                       user_input_confirm_password)
+
+    print 'Password Valid: {}'.format(password_checker.validate())
